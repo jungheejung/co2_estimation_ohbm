@@ -13,38 +13,42 @@ import matplotlib.lines as mlines
 
 # %%
 # Parameters
-main_dir = '/Users/h/Dropbox/projects_dropbox/other_sideprojects/green_climatechange/ohbm_fig9_calculate'
-co2_df = pd.read_csv(os.path.join(main_dir, 'co2_rank_city.csv'))
+main_dir = '/Users/h/Dropbox/projects_dropbox/other_sideprojects/green_climatechange/fig9_oct31'
+co2_df = pd.read_csv(os.path.join(main_dir, 'OUTPUT_g02_rank_city.csv'))
 # co2_df = pd.read_csv(os.path.join(main_dir, 'INPUT_ohbm_171819_freqexpandrow.csv'))
+# %%
 co2_df['location'] = co2_df['location'].str.replace('_', ',')
 # [x] TODO: Jan 14, convert kg to metric ton
-co2_df['co2_metricton'] = co2_df['co2']/3000
+# co2_df['co2_metricton'] = co2_df['co2']/3000
 co2_df['co2_millionmetricton'] = (
-    co2_df['co2'] * 1/3000000).round(decimals=2) # thousand metric ton
+    co2_df['weightedsum_co2ton'] * 1/1000000).round(decimals=2) # thousand metric ton
+co2_df['co2_thousandmetricton'] = (
+    co2_df['weightedsum_co2ton'] * 1/1000).round(decimals=2) # thousand metric ton
+
 # https://coderzcolumn.com/tutorials/data-science/how-to-create-connection-map-chart-in-python-jupyter-notebook-plotly-and-geopandas
 
 # %% sns barplot - 06/10/2022 ____________________________________
 
-co2_top30 = co2_df.sort_values('co2_millionmetricton', ascending=True).head(20)
+co2_top30 = co2_df.sort_values('weightedsum_co2ton', ascending=True).head(20)
 co2_top30['labels'] = 'Best (top 20 most ideal)'
 co2_bottom10 = co2_df.sort_values(
-    'co2_millionmetricton', ascending=False).head(10)
+    'weightedsum_co2ton', ascending=False).head(10)
 co2_bottom10['labels'] = 'Worst (bottom 10 least ideal)'
-co2_bottom10.sort_values('co2_millionmetricton', ascending=True, inplace=True)
+co2_bottom10.sort_values('weightedsum_co2ton', ascending=True, inplace=True)
 co2_merge = pd.concat([co2_bottom10, co2_top30])
-co2_merge.drop(co2_merge.index[co2_merge['city'] == 'Tirana'], inplace=True)
+# co2_merge.drop(co2_merge.index[co2_merge['city'] == 'Tirana'], inplace=True)
 
 
 sns.set_context('paper')
 sns.set_style('whitegrid')
-co2_sort = co2_merge.sort_values('co2_millionmetricton', ascending=True)
+co2_sort = co2_merge.sort_values('weightedsum_co2ton', ascending=True)
 
 f, ax = plt.subplots(figsize=(8, 6.8), dpi = 600)
 sns.set_color_codes('pastel')
 sns.set(font_scale=0.8)
 colors = ['#FFA556' if (s == 'Worst (bottom 10 least ideal)')
           else '#6BBC6C' for s in co2_sort['labels']]
-ax = sns.barplot(x='co2_millionmetricton',
+ax = sns.barplot(x='weightedsum_co2ton',
                  y='location',
                  data=co2_sort,
                  label='labels',
@@ -62,7 +66,7 @@ for rect in rects: # Place a label for each bar
     # Get X and Y placement of label from rect
     x_value = rect.get_width()
     y_value = rect.get_y() + rect.get_height() / 2
-    space = -28 # Number of points between bar and label; change to your liking  
+    space = -50 # Number of points between bar and label; change to your liking  
     ha = 'left' # Vertical alignment for positive values
     # If value of bar is negative: place label to the left of the bar
     if x_value < 0:
@@ -83,7 +87,7 @@ for rect in rects: # Place a label for each bar
         color='white', 
         weight="bold")            # Change label color to white
 #ax.set_ylim(30, -1)
-ax.set_xlim(0, 10000)
+ax.set_xlim(0, 35000)
 ax.tick_params(axis='y', labelrotation=20)
 
 green_square = mlines.Line2D([0], [0],
@@ -112,7 +116,7 @@ leg = ax.get_legend()
 leg.legendHandles[0].set_color('#6BBC6C')
 leg.legendHandles[1].set_color('#FFA556')
 ax.set_xlabel(
-    "Emissions \n(million metric tons of carbon dioxide equivalents)", fontsize=13)
+    "Emissions \n(metric tons of carbon dioxide equivalents)", fontsize=13)
 ax.set_ylabel("Destination location \n(city, country)", fontsize=13)
 sns.despine()
 plt.tight_layout()
