@@ -47,10 +47,12 @@ for ind, fname in enumerate(cleanlist):
         print(city)
         output = pd.DataFrame()
         output= pd.read_csv(os.path.join(input_dir, 'output', fname ))
+        output['trips_amount'] = output['plane trips_amount'] + output['train trips_amount']
+        output['correct_co2_kg'] = output['co2_kg']/output['trips_amount']
         frequency = new_df.loc[new_df['city']  == city.split('_')[0], 'Freq'].tolist()[0]
         # find city name in new_df, then grab freq
         print(frequency)
-        output['co2_mul_attendee'] = output['co2_kg'] * frequency
+        output['co2_mul_attendee'] = output['correct_co2_kg'] * frequency * 2
         out = output.set_index('location')
         out_co2 = out[['co2_mul_attendee']].copy()
         out_co2.sort_index(inplace = True)
@@ -86,7 +88,7 @@ co2_df['sum_co2kg'] = co2_df.iloc[:, range(len(new_df['city'].tolist()))].sum(ax
 co2_df['sum_co2kg_div_3'] = co2_df['sum_co2kg']/3
 co2_df['weightedsum_co2ton'] = co2_df['sum_co2kg_div_3']/1000
 # %%
-co2_df.to_csv(os.path.join(main_dir, 'fig9_oct31','g02_rank_city.csv'), index = True)
+co2_df.to_csv(os.path.join(main_dir, 'fig9_oct31','OUTPUT_g02_rank_city.csv'), index = True)
 
 
 # %%
